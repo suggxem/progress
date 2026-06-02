@@ -1,0 +1,23 @@
+{
+    "name": "TechForge Studio",
+    "short_name": "TechForge",
+    "description": "استوديو رقمي احترافي لتصميم مواقع الشركات والمنصات المخصصة والمتاجر الإلكترونية",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#f4f6fb",
+    "theme_color": "#8a7bff",
+    "icons": [
+        {
+            "src": "/images/logo.jpg",
+            "sizes": "192x192",
+            "type": "image/jpeg"
+        },
+        {
+            "src": "/images/logo.jpg",
+            "sizes": "512x512",
+            "type": "image/jpeg"
+        }
+    ],
+    "lang": "ar",
+    "dir": "rtl"
+}
