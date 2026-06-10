@@ -9,12 +9,16 @@
         "preview": "vite preview"
     },
     "dependencies": {
+        "@auth0/auth0-react": "^2.17.0",
         "auth0": "^5.11.0",
+        "next.js": "^1.0.3",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
         "react-router-dom": "^7.15.1"
     },
     "devDependencies": {
+        "@types/react": "^19.2.17",
+        "@types/react-dom": "^19.2.3",
         "@vitejs/plugin-react": "^4.3.1",
         "vite": "^5.4.1"
     }
