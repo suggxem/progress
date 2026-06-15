@@ -38,7 +38,7 @@ CRITICAL ISSUES IDENTIFIED
    ✗ Could cause a white page or blank rendering
 
    SOLUTION REQUIRED:
-   The rendering logic needs to be consolidated into a SINGLE render call
+   The rendering logic needs to be consolidated[موحدة] into a SINGLE render call
    that properly wraps the App component with BOTH Auth0Provider AND BrowserRouter
 
 

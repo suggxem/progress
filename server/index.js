@@ -14,7 +14,7 @@ import { readContent, writeContent } from "./contentStore.js"
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 // Configuration
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT || 3008
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID || "1_280ckhww2q9clZ5qp3Lh_E7MJXLPZliliWMFLMbtPQ"
 const CREDENTIALS_PATH = process.env.GOOGLE_CREDENTIALS_PATH || join(__dirname, "toto-447418-6bc10d31cb53.json")
 
