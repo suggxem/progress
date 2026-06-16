@@ -1,0 +1,268 @@
+================================================================================
+                    WHITE PAGE DIAGNOSTIC REPORT
+                        TechForge Studio Project
+================================================================================
+
+ANALYSIS DATE: 2026-06-10
+
+================================================================================
+PROJECT OVERVIEW
+================================================================================
+- Project Type: React + Vite Application
+- Framework: React 18.3.1 with React Router v7.15.1
+- Build Tool: Vite 5.4.1
+- Architecture: Multi-page SPA with Auth0 integration
+- UI Framework: Custom CSS with Tajawal/Inter fonts
+- Language Support: Arabic (RTL) & English (LTR)
+
+================================================================================
+CRITICAL ISSUES IDENTIFIED
+================================================================================
+
+1. ⚠️  DUPLICATE REACT RENDERING (main.jsx - BLOCKING ISSUE)
+   
+   PROBLEM:
+   - React is being rendered TWICE on the same DOM root element
+   - Lines 17-29: First render with Auth0Provider (createRoot)
+   - Lines 31-41: Second render with BrowserRouter (ReactDOM.createRoot)
+   
+   CAUSE:
+   - Both rendering calls target the same element: document.getElementById('root')
+   - The second render overwrites the first one
+   - Auth0 initialization is being removed by the second render
+   
+   CONSEQUENCE:
+   ✗ Auth0 context may not be available
+   ✗ Routes may fail to initialize properly
+   ✗ App state could be inconsistent
+   ✗ Could cause a white page or blank rendering
+
+   SOLUTION REQUIRED:
+   The rendering logic needs to be consolidated[موحدة] into a SINGLE render call
+   that properly wraps the App component with BOTH Auth0Provider AND BrowserRouter
+
+
+2. ⚠️  MISSING ENVIRONMENT VARIABLES (POTENTIAL RUNTIME ERROR)
+   
+   FILE: .env
+   CONTENT:
+   - VITE_AUTH0_DOMAIN=dev-i6x4lcusl4t56xfr.us.auth0.com,
+   - VITE_AUTH0_CLIENT_ID=yRrJiebSx6QhpzhEiw0tVUmM5ogpEa0t
+   
+   ISSUE:
+   - Domain has a trailing comma: "dev-i6x4lcusl4t56xfr.us.auth0.com,"
+   - This invalid domain will cause Auth0Provider to fail initialization
+   
+   CONSEQUENCE:
+   ✗ Auth0 will not initialize correctly
+   ✗ Component may render error state or blank page
+   ✗ User authentication flow will fail
+   
+   SOLUTION REQUIRED:
+   Remove the trailing comma from VITE_AUTH0_DOMAIN
+
+
+3. ⚠️  CONFLICTING REACT COMPONENTS (App.jsx - ARCHITECTURAL ISSUE)
+   
+   PROBLEM:
+   - App.jsx renders BOTH Auth0 components AND the Layout with Routes
+   - Lines 43-70: Auth0 UI (logo, login/profile, logout)
+   - Lines 79-88: BrowserRouter Routes wrapping Layout
+   
+   ISSUE:
+   - Auth0 UI components are always rendered
+   - Layout/Routes are also always rendered
+   - This creates a dual-interface problem where both UIs display
+   
+   CONSEQUENCE:
+   ✗ Page displays Auth0 login UI instead of website content
+   ✗ Routes are not being displayed (App.jsx is not using Outlet or Routes properly)
+   ✗ Users see authentication interface, not the actual website
+   ✗ Could appear as a "white page" or unexpected Auth0 interface
+
+   SOLUTION REQUIRED:
+   The App component structure needs reorganization:
+   - Either remove Auth0 UI from App.jsx (if not needed)
+   - Or conditionally render either Auth0 login OR the main Layout
+   - Or restructure to use Auth0 only as a provider, not for UI
+
+
+4. ⚠️  MISSING/INVALID DEPENDENCIES (package.json - POTENTIAL ISSUE)
+   
+   DEPENDENCY: "next.js": "^1.0.3"
+   
+   PROBLEM:
+   - next.js v1.0.3 is an extremely old/deprecated version
+   - This package is incompatible with Vite and React 18
+   - Vite and Next.js serve different purposes and shouldn't coexist
+   
+   CONSEQUENCE:
+   ✗ Bundler conflicts possible
+   ✗ Import resolution issues
+   ✗ Package version conflicts
+   
+   SOLUTION REQUIRED:
+   - Remove next.js if not being used
+   - If server-side rendering is needed, choose between Vite or Next.js
+
+
+5. ⚠️  ERROR BOUNDARY NOT CATCHING ROOT-LEVEL ERRORS
+   
+   ISSUE:
+   - ErrorBoundary is placed inside nested providers
+   - Root rendering errors won't be caught
+   - Auth0Provider initialization errors won't be caught
+   
+   CONSEQUENCE:
+   ✗ If Auth0 fails to initialize, ErrorBoundary can't catch it
+   ✗ If Routes fail to initialize, it might not be caught
+   ✗ White page with no error feedback
+
+
+6. ⚠️  API PROXY MISCONFIGURATION (vite.config.js - POTENTIAL ISSUE)
+   
+   CONFIGURATION:
+   - Proxy target: 'http://localhost:3008'
+   - Changes origin: true
+   
+   ISSUE:
+   - Backend server must be running on port 3008
+   - If backend is down, API calls will fail silently
+   - AppContext makes API call to /api/content (line 26 in AppContext.jsx)
+   
+   CONSEQUENCE:
+   ✗ If backend is not running, data won't load
+   ✗ Remote content won't load, only defaults used
+   ✗ Could appear partially functional or blank
+
+
+7. ⚠️  SERVICE WORKER REGISTRATION (main.jsx - POTENTIAL ISSUE)
+   
+   PROBLEM:
+   - Service worker registration at lines 43-47
+   - File location: /sw.js
+   
+   ISSUE:
+   - /sw.js file doesn't appear to exist in the project
+   - This will cause a 404 error in the console
+   - Could interfere with caching and app initialization
+   
+   CONSEQUENCE:
+   ✗ 404 error for /sw.js
+   ✗ Service worker won't cache properly
+   ✗ May cause app loading issues
+
+
+================================================================================
+ROOT CAUSE ANALYSIS - WHY YOU'RE SEEING A WHITE PAGE
+================================================================================
+
+PRIMARY CAUSES (in order of likelihood):
+
+1. DUPLICATE REACT RENDERING (MOST LIKELY)
+   - The second render in main.jsx overwrites the first
+   - Auth0Provider initialization is lost
+   - This would typically cause a white page or broken state
+
+2. INVALID AUTH0 DOMAIN
+   - The trailing comma in VITE_AUTH0_DOMAIN breaks Auth0 initialization
+   - Auth0Provider will fail, causing the app to render an error state
+   - Could manifest as a white page if error handling is missing
+
+3. CONFLICTING APP COMPONENT LOGIC
+   - App.jsx renders Auth0 UI permanently
+   - Layout/Routes might be hidden or not rendering
+   - Could appear as wrong content or white page
+
+4. BACKEND SERVER NOT RUNNING
+   - If backend on port 3008 is down
+   - API calls will fail
+   - AppContext might not load properly
+
+
+================================================================================
+DIAGNOSTIC CHECKLIST
+================================================================================
+
+To verify the actual issue, check the browser console for:
+
+[ ] Are there JavaScript errors in the console?
+    - Look for Auth0 initialization errors
+    - Look for React component errors
+    - Look for module loading errors
+
+[ ] Is the app rendering at all?
+    - Check if #root div is populated or empty
+    - Use browser DevTools to inspect the DOM
+
+[ ] Is Auth0 causing issues?
+    - Try disabling Auth0 temporarily
+    - Check if the domain is correct
+
+[ ] Is the backend running?
+    - Try accessing http://localhost:3008 directly
+    - Check if API responses are valid
+
+[ ] Are there network errors?
+    - Check Network tab in DevTools
+    - Look for failed requests
+
+[ ] Is there a React Strict Mode double-render issue?
+    - React.StrictMode causes components to render twice in dev
+    - Check if side effects are causing problems
+
+
+================================================================================
+OTHER OBSERVATIONS
+================================================================================
+
+✓ Project Structure: Well-organized (components, pages, context, hooks, lib)
+✓ Styling: Custom CSS with design variables and dark mode support
+✓ Internationalization: Arabic/English support with RTL/LTR
+✓ Accessibility: Good use of semantic HTML and ARIA labels
+✓ Pages: Multiple pages (Home, About, Services, Portfolio, Contact, Privacy)
+
+⚠️ Code Quality Issues:
+   - Mixed locales in main.jsx (both ar and en)
+   - Duplicate font loading in index.html and main.jsx
+   - Incomplete font loading setup
+
+
+================================================================================
+RECOMMENDATIONS
+================================================================================
+
+IMMEDIATE ACTIONS (Priority: HIGH):
+1. Fix the duplicate React rendering in main.jsx
+2. Remove the trailing comma from VITE_AUTH0_DOMAIN in .env
+3. Verify backend server is running on port 3008
+4. Check browser console for specific error messages
+
+FOLLOW-UP ACTIONS (Priority: MEDIUM):
+1. Remove next.js dependency if not being used
+2. Create or remove the /sw.js service worker file
+3. Consolidate font loading (remove duplication)
+4. Review App.jsx component structure for Auth0 UI placement
+5. Move ErrorBoundary to the root of the application
+
+TESTING:
+1. Clear browser cache and reload (Ctrl+Shift+Delete)
+2. Check browser console for any error messages
+3. Verify all environment variables are set correctly
+4. Test with backend server running
+5. Test with different browsers
+
+================================================================================
+NEXT STEPS
+================================================================================
+
+1. Check the browser console for the exact error message
+2. Verify that main.jsx is the issue by examining the rendered DOM
+3. Run npm install to ensure all dependencies are correctly installed
+4. Verify the .env file is being loaded correctly
+5. Check that the backend server is operational
+
+
+================================================================================
+END OF REPORT
+================================================================================

@@ -6,15 +6,59 @@ import App from './App'
 import ErrorBoundary from './components/ErrorBoundary'
 import './style.css'
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+//Auth0 dependencies
+
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import './style.css'; // Importing the main CSS file
+// import App from './App.tsx'; // allredy imported above
+import { Auth0Provider } from '@auth0/auth0-react';
+
+//createRoot(document.getElementById('root') || document.createElement('div')).render(
+// <StrictMode>
+//   <Auth0Provider
+//     domain={import.meta.env.VITE_AUTH0_DOMAIN}
+//     clientId={import.meta.env.VITE_AUTH0_CLIENT_ID}
+//     authorizationParams={{
+//       redirect_uri: window.location.origin
+//     }}
+//</StrictMode>    >
+//     <App />
+// </Auth0Provider>
+//</StrictMode>
+//);
+
+ReactDOM.createRoot(document.getElementById('root') || document.createElement('div')).render(
+
+
   <React.StrictMode>
     <BrowserRouter>
       <ErrorBoundary>
         <AppProvider>
-          <App />
+
+
+          <Auth0Provider
+            domain={import.meta.env.VITE_AUTH0_DOMAIN}
+            clientId={import.meta.env.VITE_AUTH0_CLIENT_ID}
+            authorizationParams={{
+              redirect_uri: window.location.origin
+            }}
+          >
+
+
+            <App /> // DOM tree wrapper for Auth0Provider, providing authentication context to the entire app
+          
+
+
+          </Auth0Provider>
+
+
         </AppProvider>
       </ErrorBoundary>
     </BrowserRouter>
+
+
+
   </React.StrictMode>
 )
 

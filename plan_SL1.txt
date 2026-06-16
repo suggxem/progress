@@ -1,0 +1,54 @@
+Solution plan: restructure Auth0 to act only as an auth provider, not UI.
+
+1. Understand current Auth0 usage
+   -// `src/main.jsx` imports `Auth0Provider` but does not wrap `App` correctly.  //
+   - `src/App.jsx` and all `src/Auth0_Moduls/*` directly import `useAuth0` from `@auth0/auth0-react`.
+   - UI components (`LoginButton`, `LogoutButton`, `Profile`) are tightly coupled to Auth0 hooks.
+
+2. Create a generic auth abstraction layer
+   - Add a new auth context/provider file, e.g. `src/context/AuthContext.jsx` or `src/context/AuthProvider.jsx`.
+   - Internally wrap `Auth0Provider` around children inside that file.
+   - Expose a clean `AuthContext` and `useAuth()` hook with methods like:
+     - `login()`
+     - `logout()`
+     - `user`
+     - `isAuthenticated`
+     - `isLoading`
+     - optional `getToken()` or `getAccessToken()`
+   - Keep Auth0-specific imports (`useAuth0`, `Auth0Provider`) only in this provider file.
+
+3. Fix root rendering / provider placement
+   - Refactor `src/main.jsx` so `Auth0Provider` properly wraps `App`.
+   - Prefer wrapping `AppProvider` and `BrowserRouter` inside the auth provider, or vice versa, depending on app requirements.
+   - Ensure only one provider layer manages auth config and redirect settings.
+
+4. Refactor UI components away from Auth0 hooks
+   - Replace direct `useAuth0()` usage in `src/App.jsx`, `LoginButton.tsx`, `LogoutButton.tsx`, and `Profile.tsx` with `useAuth()`.
+   - Keep custom UI markup and styling; do not import Auth0-specific hooks in UI modules.
+   - Example: `LoginButton` calls `login()` from `useAuth()`, `LogoutButton` calls `logout()`, `Profile` reads `user` and `isAuthenticated`.
+
+5. Preserve Auth0 as auth backend only
+   - Keep Auth0 config in one place and use it solely for auth state and token management.
+   - Remove Auth0 UI references from app markup, including the Auth0 logo or text that suggests Auth0 UI is being used.
+   - Do not render any Auth0-hosted UI components or lock screens from `auth0-react` in app pages.
+
+6. Clean up file structure and naming
+   - Consider renaming `src/Auth0_Moduls` to `src/auth` or `src/auth/modules` to reflect generic auth usage.
+   - Keep folder names aligned with provider-based architecture.
+
+7. Verify and test auth flows
+   - Confirm login and logout still work via the custom provider abstraction.
+   - Confirm `App` renders loading/error states from the generic auth context, not raw Auth0 hook values.
+   - Confirm protected routes or profile content can be gated using `isAuthenticated` from `useAuth()`.
+
+8. Optional dependency review
+   - Keep `@auth0/auth0-react` if `Auth0Provider` and hooks are still used internally.
+   - Remove any extra Auth0 UI dependencies if they exist elsewhere.
+
+Target files for the plan
+   - `src/main.jsx`
+   - `src/App.jsx`
+   - `src/Auth0_Moduls/LoginButton.tsx`
+   - `src/Auth0_Moduls/LogoutButton.tsx`
+   - `src/Auth0_Moduls/Profile.tsx`
+   - new file: `src/context/AuthContext.jsx` or `src/context/AuthProvider.jsx`
